@@ -375,7 +375,7 @@ if (!defined('SQL_LAYER')):
          */
         public function escape(?string $msg): string
         {
-            if (!$msg) {
+            if ($msg === null || $msg === '') {
                 return '';
             }
             $msg = htmlspecialchars($msg, ENT_QUOTES);
