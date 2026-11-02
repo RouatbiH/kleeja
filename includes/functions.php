@@ -305,6 +305,34 @@ function send_mail(
 }
 
 /**
+ * Send the link that verifies the email of a user, ucp.php?verify_email=
+ * @param  string $to     the email to verify
+ * @param  string $name   the name of the user
+ * @param  string $hash   verification_hash of the user
+ * @param  string $intro  why the email is verified: a new account, or a new email
+ * @param  string $ignore what to do for a reader who didn't ask for it
+ * @return bool
+ */
+function kleeja_send_verification_mail(string $to, string $name, string $hash, string $intro, string $ignore): bool
+{
+    global $config, $lang;
+
+    $subject = sprintf($lang['MAIL_VERIFY_EMAIL_SUBJECT'], $config['sitename']);
+    $verify_link = $config['siteurl'] . 'ucp.php?verify_email=' . $hash;
+    $message = [
+        ['type' => 'text', 'content' => sprintf($lang['MAIL_HELLO'], $name)],
+        ['type' => 'text', 'content' => $intro],
+        ['type' => 'button', 'link' => $verify_link, 'label' => $lang['MAIL_VERIFY_EMAIL_BUTTON']],
+        ['type' => 'text', 'content' => $ignore],
+        ['type' => 'text', 'content' => sprintf($lang['MAIL_REGARDS'], $config['sitename'])],
+    ];
+
+    extract(runHook('kleeja_send_verification_mail_func', get_defined_vars()));
+
+    return send_mail($to, $message, $subject, $config['sitemail'], $config['sitename']);
+}
+
+/**
  * The blocks of an email that can be sent, see kleeja_mail_template()
  *
  * A block of another type, or one with an empty text, is skipped.

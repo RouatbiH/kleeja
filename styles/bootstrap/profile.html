@@ -72,7 +72,8 @@
 
                                 <div class="mb-3">
                                     <label for="pmail" class="form-label">{lang.EMAIL}</label>
-                                    <input type="email" class="form-control" id="pmail" name="pmail" value="{mail}" dir="ltr" autocomplete="email">
+                                    <input type="email" class="form-control" id="pmail" name="pmail" value="{mail}" dir="ltr" autocomplete="email"<IF NAME="config.verify_email==1"> aria-describedby="emailVerifyHelp"</IF>>
+                                    <IF NAME="config.verify_email==1"><div id="emailVerifyHelp" class="form-text">{lang.CHANGE_MAIL_VERIFY_NOTE}</div></IF>
                                 </div>
 
                                 <div class="mb-3">

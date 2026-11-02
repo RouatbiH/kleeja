@@ -122,6 +122,15 @@ $config_values[] = [
     0,
 ];
 $config_values[] = [
+    'verify_email',
+    '0',
+    "<label>{lang.YES}<input type=\"radio\" id=\"verify_email\" name=\"verify_email\" value=\"1\"  <IF NAME=\"con.verify_email==1\"> checked=\"checked\"</IF> /></label>\r\n <label>{lang.NO}<input type=\"radio\" id=\"verify_email\" name=\"verify_email\" value=\"0\"  <IF NAME=\"con.verify_email==0\"> checked=\"checked\"</IF> /></label>",
+    11,
+    'general',
+    0,
+    0,
+];
+$config_values[] = [
     'enable_userfile',
     '1',
     "<label>{lang.YES}<input type=\"radio\" id=\"enable_userfile\" name=\"enable_userfile\" value=\"1\"  <IF NAME=\"con.enable_userfile==1\"> checked=\"checked\"</IF> /></label>\r\n <label>{lang.NO}<input type=\"radio\" id=\"enable_userfile\" name=\"enable_userfile\" value=\"0\"  <IF NAME=\"con.enable_userfile==0\"> checked=\"checked\"</IF> /></label>",

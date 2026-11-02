@@ -103,6 +103,8 @@ return [
     'SEARCH_USERS' => 'Search for users',
     'R_IMG_CTRL' => 'Image control only',
     'ENABLE_USERFILE' => 'Enable users files',
+    'VERIFY_EMAIL' =>
+        'Verify the email before login <small>(make sure your mail is working before enabling this option. A user who changes their email has to verify the new one too)</small>',
     'R_EXTRA' => 'Extra Templates',
     'EX_HEADER_N' => 'Extra header ... which shows at the bottom of the original header',
     'EX_FOOTER_N' => 'Extra footer ... which shows at the top of the original footer',
@@ -246,6 +248,9 @@ return [
     'SEARCH4FILES_BYIP' => 'Search files via selected IP',
     'SEARCH4FILES_BYUSER' => 'Search files for this user',
     'USER_DELETED' => 'User has been deleted successfully ...',
+    'MAIL_NOT_VERIFIED' => 'Email not verified',
+    'VERIFY_USER_MAIL' => 'Verify the email address',
+    'USER_MAIL_VERIFIED' => 'The email address of the user is verified, they can login now.',
     'USER_ADDED' => 'User has been added successfully ...',
     'DIRECT_FILE_NOTE' => 'This is a Direct file. Direct files have no stats.',
     'IMAGEFOLDER' => 'Folder of Live links feature',

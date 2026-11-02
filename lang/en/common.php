@@ -89,6 +89,16 @@ return [
     'MAIL_GET_PASS_BUTTON' => 'Confirm the new password',
     'MAIL_GET_PASS_IGNORE' =>
         "If you didn't request a new password, you can ignore this email. Your current password stays the same until the request is confirmed.",
+    'MAIL_VERIFY_EMAIL_SUBJECT' => 'Verify your email address on %s',
+    'MAIL_VERIFY_EMAIL_INTRO' =>
+        'Thank you for registering on %s. To activate your account, verify your email address with the button below.',
+    'MAIL_VERIFY_EMAIL_BUTTON' => 'Verify my email address',
+    'MAIL_VERIFY_EMAIL_IGNORE' =>
+        "If you didn't create this account, you can ignore this email. The account stays inactive until the email address is verified.",
+    'MAIL_VERIFY_NEW_EMAIL_INTRO' =>
+        "You changed the email address of your account on %s. Verify the new address with the button below, you can't login again until it is verified.",
+    'MAIL_VERIFY_NEW_EMAIL_IGNORE' =>
+        "If you didn't change the email address of an account, you can ignore this email.",
     'MAIL_REPORT_SUBJECT' => 'New report on %s',
     'MAIL_REPORT_INTRO' => 'A new report was submitted on %s:',
     'MAIL_REPORT_BUTTON' => 'Review the reports',
@@ -104,6 +114,20 @@ return [
     'CANT_SEND_NEWPASS' => 'Error... the new password could not be sent!',
     'OK_SEND_NEWPASS' => 'We have sent you the new password',
     'OK_APPLY_NEWPASS' => 'New password set. you can now login to your account.',
+    'REGISTER_VERIFY_EMAIL' =>
+        'Thank you for registering. We sent a verification link to your email address, open it to activate your account.',
+    'CANT_SEND_VERIFY_EMAIL' =>
+        'Your account was created, but the verification email could not be sent. Contact the site administration to activate it.',
+    'VERIFY_EMAIL_DONE' => 'Your email address is verified. You can now login to your account.',
+    'VERIFY_EMAIL_WRONG_LINK' => 'This verification link is wrong, or it has been used already.',
+    'LOGIN_MAIL_NOT_VERIFIED' =>
+        'Your email address is not verified yet. Open the link in the verification email we sent you, then login.',
+    'CHANGE_MAIL_VERIFY_NOTE' =>
+        'If you change your email address, you have to verify the new one before you can login again.',
+    'VERIFY_NEW_EMAIL_SENT' =>
+        "We sent a verification link to your new email address. Open it before your next login, you can't login again until it is verified.",
+    'CANT_SEND_VERIFY_NEW_EMAIL' =>
+        'The verification email could not be sent to the new address, so your email address was not changed.',
     'GUIDE' => 'Allowed Extensions',
     'GUIDE_EXP' => 'Allowed extensions & Sizes',
     'EXT' => 'Extension',

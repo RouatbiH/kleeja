@@ -313,7 +313,7 @@ return [
     'HELP_USERS_FEATURE_5' =>
         '<strong>Files\' Extensions Settings</strong> lists the file types the group may upload and the largest size of each, in kilobytes. The Byte Converter helps with the numbers.',
     'HELP_USERS_FEATURE_6' =>
-        '<strong>Users</strong> lists the members of a group, where you can edit a user, move them to another group or delete their files. <strong>New user</strong> creates an account by hand.',
+        '<strong>Users</strong> lists the members of a group, where you can edit a user, move them to another group or delete their files. A user who hasn\'t verified their email address yet is marked, and a founder can verify it from the menu of the user. <strong>New user</strong> creates an account by hand.',
     'HELP_USERS_STEP_TITLE' => 'Let a group upload a new file type',
     'HELP_USERS_STEP_1' => 'Select <strong>Files\' Extensions Settings</strong> on the group.',
     'HELP_USERS_STEP_2' => 'Type the extension without a dot, for example <code>pdf</code>, and add it.',
