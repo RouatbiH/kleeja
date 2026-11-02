@@ -192,7 +192,7 @@ return [
     'HELP_DASHBOARD_FEATURE_6' =>
         '<strong>Quick Actions</strong> change the language of a group in one step, and delete the cache.',
     'HELP_DASHBOARD_FEATURE_7' =>
-        'Under Dashboard in the sidebar, sub-pages show your server details (PHP settings and search engine visits), the Kleeja blog and the Kleeja development team.',
+        'Under Dashboard in the sidebar, sub-pages show your server details, the Kleeja blog and the Kleeja development team. The server details list the PHP settings and extensions Kleeja needs, the folders it must write to, the search engine visits, and a system report to copy into a bug report.',
     'HELP_DASHBOARD_STEP_TITLE' => 'Choose which boxes the dashboard shows',
     'HELP_DASHBOARD_STEP_1' => 'Select <strong>Customization</strong> at the top of the dashboard.',
     'HELP_DASHBOARD_STEP_2' => 'Turn off the switch of every box you don\'t need.',

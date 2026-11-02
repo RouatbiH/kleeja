@@ -306,12 +306,50 @@
     <div class="col">
         <section class="card h-100">
             <div class="card-header kj-card-header">
+                <h2 class="kj-card-title"><i class="fa-solid fa-cube" aria-hidden="true"></i> Kleeja</h2>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item kj-kv"><span>{lang.KLEEJA_VERSION}</span><span dir="ltr">{kleeja_version}</span></li>
+                <li class="list-group-item kj-kv"><span>{lang.ADM_LATEST_VERSION}</span><span dir="ltr">{latest_kleeja_version}</span></li>
+                <li class="list-group-item kj-kv"><span>{lang.ADM_LAST_UPDATE_CHECK}</span><span>{last_update_check}</span></li>
+                <li class="list-group-item kj-kv">
+                    <span>{lang.ADM_DB_VERSION}</span>
+                    <IF NAME="db_update_needed">
+                    <span class="kj-badge is-danger" title="{lang.DB_UPDATE_NEEDED_TITLE}" dir="ltr">{db_version} → {kleeja_db_version}</span>
+                    <ELSE>
+                    <span dir="ltr">{db_version}</span>
+                    </IF>
+                </li>
+                <li class="list-group-item kj-kv"><span>{lang.R_PLUGINS}</span><a href="./?cp=j_plugins">{plugins_count}</a></li>
+                <li class="list-group-item kj-kv"><span>{lang.STYLE_IS_DEFAULT}</span><a href="./?cp=m_styles" dir="ltr">{default_style}</a></li>
+                <li class="list-group-item kj-kv">
+                    <span>{lang.ADM_PRETTY_URLS}</span>
+                    <IF NAME="mod_writer_on"><span class="kj-badge is-success">{lang.ADM_ENABLED}</span><ELSE><span class="kj-badge is-neutral">{lang.ADM_DISABLED}</span></IF>
+                </li>
+                <li class="list-group-item kj-kv">
+                    <span>{lang.SITECLOSE}</span>
+                    <IF NAME="siteclose_on"><span class="kj-badge is-warning">{lang.ADM_ON}</span><ELSE><span class="kj-badge is-neutral">{lang.ADM_OFF}</span></IF>
+                </li>
+                <li class="list-group-item kj-kv">
+                    <span>{lang.ADM_DEV_STAGE}</span>
+                    <IF NAME="dev_stage_on"><span class="kj-badge is-warning">{lang.ADM_ON}</span><ELSE><span class="kj-badge is-neutral">{lang.ADM_OFF}</span></IF>
+                </li>
+            </ul>
+        </section>
+    </div>
+
+    <div class="col">
+        <section class="card h-100">
+            <div class="card-header kj-card-header">
                 <h2 class="kj-card-title"><i class="fa-solid fa-server" aria-hidden="true"></i> {lang.ADM_SERVER}</h2>
             </div>
             <ul class="list-group list-group-flush">
+                <li class="list-group-item kj-kv"><span>{lang.ADM_OS}</span><span dir="ltr">{os_name}</span></li>
+                <li class="list-group-item kj-kv"><span>{lang.ADM_WEB_SERVER}</span><span dir="ltr">{web_server}</span></li>
                 <li class="list-group-item kj-kv"><span>{lang.PHP_VER}</span><span dir="ltr">{php_version}</span></li>
-                <li class="list-group-item kj-kv"><span>{lang.MYSQL_VER}</span><span dir="ltr">{mysql_version}</span></li>
-                <li class="list-group-item kj-kv"><span>{lang.KLEEJA_VERSION}</span><span dir="ltr">{kleeja_version}</span></li>
+                <li class="list-group-item kj-kv"><span>{lang.ADM_PHP_SAPI}</span><span dir="ltr">{php_sapi}</span></li>
+                <li class="list-group-item kj-kv"><span>{lang.ADM_DATABASE}</span><span dir="ltr">{mysql_version}</span></li>
+                <li class="list-group-item kj-kv"><span>{lang.ADM_DB_SIZE}</span><span dir="ltr">{db_size}</span></li>
             </ul>
         </section>
     </div>
@@ -321,11 +359,27 @@
             <div class="card-header kj-card-header">
                 <h2 class="kj-card-title"><i class="fa-brands fa-php" aria-hidden="true"></i> php.ini</h2>
             </div>
-            <ul class="list-group list-group-flush" dir="ltr">
-                <li class="list-group-item kj-kv"><code>max_execution_time</code><span>{max_execution_time}</span></li>
-                <li class="list-group-item kj-kv"><code>upload_max_filesize</code><span>{upload_max_filesize}</span></li>
-                <li class="list-group-item kj-kv"><code>post_max_size</code><span>{post_max_size}</span></li>
-                <li class="list-group-item kj-kv"><code>memory_limit</code><span>{memory_limit}</span></li>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item kj-kv">
+                    <span><code>file_uploads</code><IF NAME="file_uploads_hint"><small class="d-block text-danger-emphasis">{file_uploads_hint}</small></IF></span>
+                    <IF NAME="file_uploads_on"><span dir="ltr">On</span><ELSE><span class="kj-badge is-danger" dir="ltr">Off</span></IF>
+                </li>
+                <li class="list-group-item kj-kv">
+                    <span><code>max_file_uploads</code><IF NAME="max_file_uploads_hint"><small class="d-block text-warning-emphasis">{max_file_uploads_hint}</small></IF></span>
+                    <span<IF NAME="max_file_uploads_hint"> class="kj-badge is-warning"</IF> dir="ltr">{max_file_uploads}</span>
+                </li>
+                <li class="list-group-item kj-kv">
+                    <span><code>upload_max_filesize</code><IF NAME="upload_max_filesize_hint"><small class="d-block text-warning-emphasis">{upload_max_filesize_hint}</small></IF></span>
+                    <span<IF NAME="upload_max_filesize_hint"> class="kj-badge is-warning"</IF> dir="ltr">{upload_max_filesize}</span>
+                </li>
+                <li class="list-group-item kj-kv">
+                    <span><code>post_max_size</code><IF NAME="post_max_size_hint"><small class="d-block text-warning-emphasis">{post_max_size_hint}</small></IF></span>
+                    <span<IF NAME="post_max_size_hint"> class="kj-badge is-warning"</IF> dir="ltr">{post_max_size}</span>
+                </li>
+                <li class="list-group-item kj-kv"><code>max_execution_time</code><span dir="ltr">{max_execution_time}</span></li>
+                <li class="list-group-item kj-kv"><code>max_input_time</code><span dir="ltr">{max_input_time}</span></li>
+                <li class="list-group-item kj-kv"><code>memory_limit</code><span dir="ltr">{memory_limit}</span></li>
+                <li class="list-group-item kj-kv"><code>allow_url_fopen</code><span dir="ltr"><IF NAME="allow_url_fopen_on">On<ELSE>Off</IF></span></li>
             </ul>
         </section>
     </div>
@@ -333,11 +387,18 @@
     <div class="col">
         <section class="card h-100">
             <div class="card-header kj-card-header">
-                <h2 class="kj-card-title"><i class="fa-brands fa-google" aria-hidden="true"></i> {lang.SEARCH_STAT} · Google</h2>
+                <h2 class="kj-card-title"><i class="fa-solid fa-puzzle-piece" aria-hidden="true"></i> {lang.ADM_PHP_EXTENSIONS}</h2>
             </div>
             <ul class="list-group list-group-flush">
-                <li class="list-group-item kj-kv"><span>{lang.LAST_GOOGLE}</span><span>{s_last_google}</span></li>
-                <li class="list-group-item kj-kv"><span>{lang.GOOGLE_NUM}</span><span>{s_google_num}</span></li>
+                <LOOP NAME="php_extensions">
+                <li class="list-group-item d-flex align-items-center justify-content-between gap-3">
+                    <div>
+                        <div class="fw-semibold">{{name}}</div>
+                        <div class="small text-body-secondary">{{use}}</div>
+                    </div>
+                    <IF LOOP="ok"><span class="kj-badge is-success">{lang.ADM_EXT_AVAILABLE}</span><ELSE><span class="kj-badge is-{{level}}">{lang.ADM_EXT_MISSING}</span></IF>
+                </li>
+                </LOOP>
             </ul>
         </section>
     </div>
@@ -345,15 +406,51 @@
     <div class="col">
         <section class="card h-100">
             <div class="card-header kj-card-header">
-                <h2 class="kj-card-title"><i class="fa-brands fa-microsoft" aria-hidden="true"></i> {lang.SEARCH_STAT} · Bing</h2>
+                <h2 class="kj-card-title"><i class="fa-solid fa-folder-open" aria-hidden="true"></i> {lang.ADM_FOLDERS}</h2>
             </div>
             <ul class="list-group list-group-flush">
-                <li class="list-group-item kj-kv"><span>{lang.LAST_BING}</span><span>{s_last_bing}</span></li>
-                <li class="list-group-item kj-kv"><span>{lang.BING_NUM}</span><span>{s_bing_num}</span></li>
+                <LOOP NAME="kleeja_folders">
+                <li class="list-group-item d-flex align-items-center justify-content-between gap-3">
+                    <div>
+                        <code dir="ltr">{{path}}</code>
+                        <div class="small text-body-secondary">{{use}}</div>
+                    </div>
+                    <IF LOOP="ok"><span class="kj-badge is-success">{lang.ADM_WRITABLE}</span><ELSE><span class="kj-badge is-{{level}}">{lang.ADM_NOT_WRITABLE}</span></IF>
+                </li>
+                </LOOP>
+                <li class="list-group-item kj-kv"><span>{lang.ADM_DISK_FREE}</span><span dir="ltr">{disk_free_space}</span></li>
+            </ul>
+        </section>
+    </div>
+
+    <div class="col">
+        <section class="card h-100">
+            <div class="card-header kj-card-header">
+                <h2 class="kj-card-title"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> {lang.SEARCH_STAT}</h2>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item kj-kv"><span><i class="fa-brands fa-google fa-fw" aria-hidden="true"></i> {lang.LAST_GOOGLE}</span><span>{s_last_google}</span></li>
+                <li class="list-group-item kj-kv"><span><i class="fa-brands fa-google fa-fw" aria-hidden="true"></i> {lang.GOOGLE_NUM}</span><span>{s_google_num}</span></li>
+                <li class="list-group-item kj-kv"><span><i class="fa-brands fa-microsoft fa-fw" aria-hidden="true"></i> {lang.LAST_BING}</span><span>{s_last_bing}</span></li>
+                <li class="list-group-item kj-kv"><span><i class="fa-brands fa-microsoft fa-fw" aria-hidden="true"></i> {lang.BING_NUM}</span><span>{s_bing_num}</span></li>
             </ul>
         </section>
     </div>
 </div>
+
+<!-- the same details as plain text, for a bug report -->
+<section class="card mt-3">
+    <div class="card-header kj-card-header">
+        <h2 class="kj-card-title" id="kjSystemReportTitle"><i class="fa-solid fa-bug" aria-hidden="true"></i> {lang.ADM_SYSTEM_REPORT}</h2>
+        <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" data-kj-copy="#kjSystemReport" data-kj-copied="{lang.ADM_COPIED}">
+            <i class="fa-solid fa-copy" aria-hidden="true"></i><span data-kj-copy-label>{lang.ADM_COPY}</span>
+        </button>
+    </div>
+    <div class="card-body">
+        <p class="small text-body-secondary">{lang.ADM_SYSTEM_REPORT_HINT} <a href="https://github.com/kleeja/kleeja/issues" target="_blank" rel="noopener" dir="ltr">github.com/kleeja/kleeja/issues</a></p>
+        <textarea class="form-control font-monospace small" id="kjSystemReport" rows="12" style="field-sizing: content" readonly dir="ltr" aria-labelledby="kjSystemReportTitle">{system_report}</textarea>
+    </div>
+</section>
 
 
 <ELSEIF NAME="current_smt == blog">

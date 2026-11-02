@@ -421,5 +421,185 @@ if ($cf_num > 3) {
     }
 }
 
+//other info page, what the server gives Kleeja, and a report to paste in a bug report
+if ($current_smt === 'other') {
+    $ini_value = fn(string $name): string => (string) (function_exists('ini_get')
+        ? @ini_get($name)
+        : @get_cfg_var($name));
+    $ini_is_on = fn(string $name): bool => in_array(strtolower($ini_value($name)), ['1', 'on', 'true', 'yes'], true);
+
+    //installation
+    $db_version = (int) ($config['db_version'] ?? 0);
+    $kleeja_db_version = (int) KLEEJA_DB_VERSION;
+    $db_update_needed = $db_version < $kleeja_db_version;
+    $latest_kleeja_version = $latest_version === '' ? $lang['UNKNOWN'] : htmlspecialchars($latest_version);
+    $last_update_check = empty($v['last_check']) ? $lang['UNKNOWN'] : kleeja_date((int) $v['last_check']);
+    $default_style = kleeja_html_display($config['style']);
+    $mod_writer_on = (int) $config['mod_writer'] === 1;
+    $siteclose_on = (int) $config['siteclose'] === 1;
+    $dev_stage_on = defined('DEV_STAGE');
+
+    $plugins_result = $SQL->build([
+        'SELECT' => 'p.plg_name, p.plg_ver, p.plg_disabled',
+        'FROM' => "{$dbprefix}plugins p",
+        'ORDER BY' => 'p.plg_name',
+    ]);
+
+    $plugins_total = 0;
+    $plugins_enabled = [];
+
+    while ($row = $SQL->fetch_array($plugins_result)) {
+        $plugins_total++;
+
+        if ((int) $row['plg_disabled'] === 0) {
+            $plugins_enabled[] = $row['plg_name'] . ' ' . $row['plg_ver'];
+        }
+    }
+
+    $SQL->freeresult($plugins_result);
+    $plugins_count = sprintf($lang['ADM_PLUGINS_ENABLED_OF'], count($plugins_enabled), $plugins_total);
+
+    //server
+    $os_name = function_exists('php_uname') ? php_uname('s') . ' ' . php_uname('r') : PHP_OS_FAMILY;
+    $server_software = (string) ($_SERVER['SERVER_SOFTWARE'] ?? '');
+    $web_server = $server_software === '' ? $lang['UNKNOWN'] : htmlspecialchars($server_software);
+    $php_sapi = PHP_SAPI;
+
+    if ($SQL->driver === 'sqlite') {
+        $db_bytes = @filesize(PATH . $dbname);
+    } else {
+        //some hosts hide information_schema, then the size is unknown instead of an SQL error page
+        $show_errors = $SQL->show_errors;
+        $SQL->show_errors = false;
+        $db_result = $SQL->build([
+            'SELECT' => 'SUM(data_length + index_length) AS size',
+            'FROM' => 'information_schema.TABLES',
+            'WHERE' => 'table_schema = DATABASE() AND LEFT(table_name, :length) = :prefix',
+            'BIND' => ['length' => strlen($dbprefix), 'prefix' => $dbprefix],
+        ]);
+        $SQL->show_errors = $show_errors;
+
+        $db_row = $db_result ? $SQL->fetch_array($db_result) : false;
+        $db_bytes = $db_row && is_numeric($db_row['size']) ? (int) $db_row['size'] : false;
+        $SQL->freeresult($db_result);
+    }
+
+    $db_size = $db_bytes === false ? $lang['UNKNOWN'] : readable_size((int) $db_bytes);
+
+    //php.ini, with a hint where a value is lower than what Kleeja settings need
+    $file_uploads_on = $ini_is_on('file_uploads');
+    $max_file_uploads = $ini_value('max_file_uploads');
+    $max_input_time = $ini_value('max_input_time');
+    $allow_url_fopen_on = $ini_is_on('allow_url_fopen');
+
+    $file_uploads_hint = $file_uploads_on ? '' : $lang['ADM_INI_UPLOADS_OFF'];
+    $max_file_uploads_hint =
+        (int) $max_file_uploads > 0 && (int) $max_file_uploads < (int) $config['filesnum']
+            ? sprintf($lang['ADM_INI_FILES_LOW'], (int) $config['filesnum'])
+            : '';
+    $upload_max_filesize_hint = isset($ADM_NOTIFICATIONS['file_size_ini_low'])
+        ? sprintf($lang['ADM_INI_UPLOAD_LOW'], readable_size($biggest_size))
+        : '';
+    $post_max_size_hint = isset($ADM_NOTIFICATIONS['post_m_size_ini_low'])
+        ? sprintf($lang['ADM_INI_POST_LOW'], readable_size($post_max_size_s_must_be), (int) $config['filesnum'])
+        : '';
+
+    //a missing extension is only a problem as big as the feature it stops, level is the badge color then
+    $php_extensions = [
+        [
+            'name' => 'GD',
+            'use' => $lang['ADM_EXT_GD'],
+            'ok' => function_exists('imagecreatetruecolor'),
+            'level' => 'danger',
+        ],
+        [
+            'name' => 'Imagick',
+            'use' => $lang['ADM_EXT_IMAGICK'],
+            'ok' => (bool) phpversion('imagick'),
+            'level' => 'neutral',
+        ],
+        ['name' => 'Zip', 'use' => $lang['ADM_EXT_ZIP'], 'ok' => class_exists('ZipArchive'), 'level' => 'warning'],
+        [
+            'name' => 'cURL',
+            'use' => $lang['ADM_EXT_CURL'],
+            'ok' => function_exists('curl_init'),
+            'level' => $allow_url_fopen_on ? 'neutral' : 'warning',
+        ],
+        [
+            'name' => 'Fileinfo',
+            'use' => $lang['ADM_EXT_FILEINFO'],
+            'ok' => function_exists('finfo_open') || function_exists('mime_content_type'),
+            'level' => 'warning',
+        ],
+        [
+            'name' => 'mbstring',
+            'use' => $lang['ADM_EXT_MBSTRING'],
+            'ok' => function_exists('mb_substr'),
+            'level' => 'warning',
+        ],
+        [
+            'name' => 'OPcache',
+            'use' => $lang['ADM_EXT_OPCACHE'],
+            'ok' => function_exists('opcache_get_status') && $ini_is_on('opcache.enable'),
+            'level' => 'neutral',
+        ],
+    ];
+
+    //folders that Kleeja writes to
+    $kleeja_folders = [];
+
+    foreach (
+        [
+            'cache' => ['use' => $lang['ADM_DIR_CACHE'], 'level' => 'danger'],
+            $config['foldername'] => ['use' => $lang['ADM_DIR_UPLOADS'], 'level' => 'danger'],
+            $config['foldername'] . '/thumbs' => ['use' => $lang['ADM_DIR_THUMBS'], 'level' => 'danger'],
+            'plugins' => ['use' => $lang['ADM_DIR_PLUGINS'], 'level' => 'warning'],
+            'styles' => ['use' => $lang['ADM_DIR_STYLES'], 'level' => 'warning'],
+        ]
+        as $folder => $folder_data
+    ) {
+        $kleeja_folders[] = ['path' => $folder, 'ok' => is_writable(PATH . $folder)] + $folder_data;
+    }
+
+    $disk_free = function_exists('disk_free_space') ? @disk_free_space(PATH . $config['foldername']) : false;
+    $disk_free_space = $disk_free === false ? $lang['UNKNOWN'] : readable_size((int) $disk_free);
+
+    extract(runHook('other_info_start_admin', get_defined_vars()));
+
+    //plain text in English, like the bug report template of GitHub asks for it
+    $missing_extensions = array_column(
+        array_filter($php_extensions, fn(array $extension): bool => !$extension['ok']),
+        'name',
+    );
+    $not_writable_folders = array_column(
+        array_filter($kleeja_folders, fn(array $folder): bool => !$folder['ok']),
+        'path',
+    );
+
+    $system_report = htmlspecialchars(
+        implode("\n", [
+            '- Kleeja: ' . KLEEJA_VERSION . ' (database ' . $db_version . ')',
+            '- OS: ' . $os_name,
+            '- Web server: ' . ($server_software === '' ? 'unknown' : $server_software),
+            '- PHP: ' . PHP_VERSION . ' (' . PHP_SAPI . ')',
+            '- Database: ' . $mysql_version,
+            '- Style: ' . kleeja_html_decode($config['style']),
+            '- Plugins: ' . (empty($plugins_enabled) ? 'none' : implode(', ', $plugins_enabled)),
+            '- Missing PHP extensions: ' . (empty($missing_extensions) ? 'none' : implode(', ', $missing_extensions)),
+            '- Not writable: ' . (empty($not_writable_folders) ? 'none' : implode(', ', $not_writable_folders)),
+            '- php.ini: ' .
+            implode(', ', [
+                'file_uploads=' . ($file_uploads_on ? 'On' : 'Off'),
+                'max_file_uploads=' . $max_file_uploads,
+                'upload_max_filesize=' . $upload_max_filesize,
+                'post_max_size=' . $post_max_size,
+                'max_execution_time=' . $max_execution_time,
+                'memory_limit=' . $memory_limit,
+            ]),
+            '- Mod Rewrite: ' . ($mod_writer_on ? 'on' : 'off'),
+        ]),
+    );
+}
+
 // ECharts draws the uploads chart on the dashboard and the commit charts on the team page
 $start_charts = $current_smt === 'team' || ($current_smt === 'general' && $stats_chart);
