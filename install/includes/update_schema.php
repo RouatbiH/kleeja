@@ -263,3 +263,15 @@ $update_schema[10]['functions'] = [
         }
     },
 ];
+
+//the verification of the email of new users, NULL is a verified user, so the users that are there already are verified.
+//no COLLATE in the ALTER, SQLite doesn't know utf8_bin and only CREATE TABLE is converted for it
+$update_schema[11]['sql'] = [
+    'users_verification_hash' => "ALTER TABLE `{$dbprefix}users` ADD `verification_hash` VARCHAR(64) NULL DEFAULT NULL;",
+    'verify_email' =>
+        "INSERT INTO `{$dbprefix}config` (`name`, `value`, `option`, `display_order`, `type`, `plg_id`, `dynamic`) VALUES ('verify_email', '0', '" .
+        '<label>{lang.YES}<input type="radio" id="verify_email" name="verify_email" value="1"  <IF NAME="con.verify_email==1"> checked="checked"</IF> /></label>' .
+        "\r\n" .
+        ' <label>{lang.NO}<input type="radio" id="verify_email" name="verify_email" value="0"  <IF NAME="con.verify_email==0"> checked="checked"</IF> /></label>' .
+        "', 11, 'general', 0, 0);",
+];

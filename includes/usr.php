@@ -20,6 +20,9 @@ class usrcp
      */
     private array $current_user = [];
 
+    //the password was right, but the email is not verified yet, see normal()
+    private bool $mail_unverified = false;
+
     public function data(
         string $name,
         string $pass,
@@ -65,6 +68,8 @@ class usrcp
     public function normal(string $name, string $pass, int $expire, bool $hashed = false, bool $loginadm = false): bool
     {
         global $SQL, $dbprefix, $config, $userinfo;
+
+        $this->mail_unverified = false;
 
         $userinfo = [
             'id' => 0,
@@ -132,6 +137,20 @@ class usrcp
                     return false;
                 }
 
+                //a login waits for the link of the verification mail, it empties verification_hash, see ucp.php?verify_email=
+                //the cookie of a user who is logged in, and the password of the admin panel, are not a new login,
+                //so a user who changed the email stays logged in until the next login
+                if (
+                    !$hashed &&
+                    !$loginadm &&
+                    (int) ($config['verify_email'] ?? 0) === 1 &&
+                    !empty($row['verification_hash'])
+                ) {
+                    $this->mail_unverified = true;
+
+                    return false;
+                }
+
                 //the admin panel login checks the password only, the user is the same
                 if (!$loginadm) {
                     $this->set_current_user($row);
@@ -166,6 +185,12 @@ class usrcp
         } else {
             return false;
         }
+    }
+
+    //whether the last login failed only because the email of the user is not verified yet
+    public function mail_unverified(): bool
+    {
+        return $this->mail_unverified;
     }
 
     public function set_login_cookie(array $row, int $expire): void

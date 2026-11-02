@@ -229,6 +229,7 @@
                 <div class="small text-body-secondary d-flex flex-wrap gap-3">
                     <span><i class="fa-solid fa-users" aria-hidden="true"></i> {{group}}</span>
                     <span><i class="fa-solid fa-clock" aria-hidden="true"></i> {lang.LAST_VISIT}: {{last_visit}}</span>
+                    <IF LOOP="mail_unverified"><span class="kj-badge is-warning"><i class="fa-solid fa-envelope" aria-hidden="true"></i> {lang.MAIL_NOT_VERIFIED}</span></IF>
                 </div>
             </div>
             <div class="d-flex gap-2">
@@ -245,6 +246,13 @@
                                 <i class="fa-solid fa-folder-open" aria-hidden="true"></i> {lang.BROSWERF}
                             </a>
                         </li>
+                        <IF LOOP="verifyusr_link">
+                        <li>
+                            <a class="dropdown-item" href="{{verifyusr_link}}&amp;{GET_FORM_KEY}">
+                                <i class="fa-solid fa-envelope-circle-check" aria-hidden="true"></i> {lang.VERIFY_USER_MAIL}
+                            </a>
+                        </li>
+                        </IF>
                         <IF LOOP="delusrfile_link">
                         <li>
                             <a class="dropdown-item" href="{{delusrfile_link}}&amp;{GET_FORM_KEY}" data-kj-confirm>

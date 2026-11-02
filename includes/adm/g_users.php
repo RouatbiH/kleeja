@@ -172,6 +172,31 @@ if (ig('deleteuserfile')) {
 }
 
 //
+//verify the email of a user [the founder only], what the link of the verification mail does
+//
+if (ig('verify_user')) {
+    //check _GET Csrf token
+    if (!kleeja_check_form_key_get('adm_users')) {
+        kleeja_admin_err($lang['INVALID_GET_KEY'], title: $lang['ERROR'], redirect: $action_all, rs: 2);
+    }
+
+    if ((int) $userinfo['founder'] !== 1) {
+        kleeja_admin_err($lang['HV_NOT_PRVLG_ACCESS'], title: $lang['ERROR'], redirect: $action_all, rs: 2);
+    }
+
+    $update_query = [
+        'UPDATE' => "{$dbprefix}users",
+        'SET' => 'verification_hash = NULL',
+        'WHERE' => 'id = :id',
+        'BIND' => ['id' => g('verify_user', 'int')],
+    ];
+
+    $SQL->build($update_query);
+
+    kleeja_admin_info($lang['USER_MAIL_VERIFIED'], redirect: $action_all, rs: 2);
+}
+
+//
 //Delete a user
 //
 if (ig('del_user')) {
@@ -1221,6 +1246,8 @@ switch ($current_smt):
 
         if ($nums_rows > 0) {
             $query['SELECT'] = 'id, name, founder, group_id, last_visit';
+            //the column is added by the database update 11, the site works before that update is done
+            $query['SELECT'] .= (int) ($config['db_version'] ?? 0) >= 11 ? ', verification_hash' : '';
             $query['LIMIT'] = ':start, :perpage';
             $query['BIND']['start'] = $start;
             $query['BIND']['perpage'] = $perpage;
@@ -1233,6 +1260,7 @@ switch ($current_smt):
                     ($config['mod_writer']
                         ? 'fileuser-' . $row['id'] . '.html'
                         : 'ucp.php?go=fileuser&amp;id=' . $row['id']);
+                $mail_unverified = !empty($row['verification_hash']);
 
                 $arr[] = [
                     'id' => $row['id'],
@@ -1264,6 +1292,16 @@ switch ($current_smt):
                         '&amp;smt=edit_user&amp;uid=' .
                         $row['id'] .
                         (ig('page') ? '&amp;page=' . g('page', 'int') : ''),
+                    'verifyusr_link' =>
+                        $mail_unverified && (int) $userinfo['founder'] === 1
+                            ? basename(ADMIN_PATH) .
+                                '?cp=' .
+                                basename(__FILE__, '.php') .
+                                '&amp;verify_user=' .
+                                $row['id'] .
+                                (ig('page') ? '&amp;page=' . g('page', 'int') : '')
+                            : false,
+                    'mail_unverified' => $mail_unverified,
                     'founder' => (int) $row['founder'],
                     'last_visit' => empty($row['last_visit']) ? $lang['NOT_YET'] : kleeja_date($row['last_visit']),
                     'group' => str_replace(

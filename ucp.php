@@ -21,7 +21,8 @@ $extra = '';
 $show_style = true;
 $styleePath = '';
 
-switch (g('go')) {
+//the link of the verification mail is ucp.php?verify_email=hash, without a go
+switch (ig('verify_email') ? 'verify_email' : g('go')) {
     //
     //login page
     //
@@ -79,7 +80,9 @@ switch (g('go')) {
 
             if (empty($ERRORS)) {
                 if (!$usrcp->data(p('lname'), p('lpass'), expire: !ip('remme') ? false : p('remme'))) {
-                    $ERRORS['login_check'] = $lang['LOGIN_ERROR'];
+                    $ERRORS['login_check'] = $usrcp->mail_unverified()
+                        ? $lang['LOGIN_MAIL_NOT_VERIFIED']
+                        : $lang['LOGIN_ERROR'];
                 } else {
                     $errorpage = true;
                     extract(runHook('login_data_no_error', get_defined_vars()));
@@ -217,6 +220,8 @@ switch (g('go')) {
                 $pass = (string) $usrcp->kleeja_hash_password(trim(p('lpass')) . $user_salt);
                 $mail = strtolower(trim(kleeja_html_encode(p('lmail'))));
                 $clean_name = (string) $usrcp->cleanusername($name);
+                //the user can log in after the link of the verification mail empties it, see verify_email below
+                $verification_hash = (int) ($config['verify_email'] ?? 0) === 1 ? bin2hex(random_bytes(32)) : null;
 
                 $insert_query = [
                     'INSERT' => 'name ,password, password_salt ,mail, register_time, clean_name, group_id',
@@ -232,6 +237,13 @@ switch (g('go')) {
                         'group_id' => $config['default_group'],
                     ],
                 ];
+
+                //the column comes with the setting in the same database update, so it isn't there before it
+                if ($verification_hash !== null) {
+                    $insert_query['INSERT'] .= ', verification_hash';
+                    $insert_query['VALUES'] .= ', :verification_hash';
+                    $insert_query['BIND']['verification_hash'] = $verification_hash;
+                }
 
                 extract(runHook('qr_insert_new_user_register', get_defined_vars()));
 
@@ -259,12 +271,77 @@ switch (g('go')) {
                         delete_cache('data_stats');
                     }
 
+                    //no login before the email is verified, the mail has the link of verify_email below
+                    if ($verification_hash !== null) {
+                        $sent = kleeja_send_verification_mail(
+                            $mail,
+                            $name,
+                            $verification_hash,
+                            sprintf($lang['MAIL_VERIFY_EMAIL_INTRO'], $config['sitename']),
+                            $lang['MAIL_VERIFY_EMAIL_IGNORE'],
+                        );
+
+                        if (!$sent) {
+                            kleeja_err($lang['CANT_SEND_VERIFY_EMAIL'], $lang['REGISTER']);
+                        }
+
+                        kleeja_info($lang['REGISTER_VERIFY_EMAIL'], $lang['REGISTER']);
+                    }
+
                     //auto login
                     $usrcp->data($t_lname, $t_lpass, expire: false);
                     kleeja_info($text, redirect: $config['siteurl'], rs: 3);
                 }
             }
         }
+
+        break;
+
+    //
+    //the link of the verification mail, see register
+    //
+    case 'verify_email':
+        extract(runHook('begin_verify_email', get_defined_vars()));
+
+        //bin2hex(random_bytes(32)) of register, anything else is not a link of ours
+        $verification_hash = g('verify_email');
+
+        if (!preg_match('/^[a-f0-9]{64}$/', $verification_hash)) {
+            kleeja_err($lang['VERIFY_EMAIL_WRONG_LINK']);
+        }
+
+        $result = $SQL->query("SELECT id FROM {$dbprefix}users WHERE verification_hash = :hash", [
+            'hash' => $verification_hash,
+        ]);
+
+        //a used link matches nobody, the hash is emptied below
+        if (!$SQL->num_rows($result)) {
+            kleeja_err($lang['VERIFY_EMAIL_WRONG_LINK']);
+        }
+
+        $row = $SQL->fetch_array($result);
+        $SQL->freeresult($result);
+
+        $update_query = [
+            'UPDATE' => "{$dbprefix}users",
+            'SET' => 'verification_hash = NULL',
+            'WHERE' => 'id = :id',
+            'BIND' => ['id' => (int) $row['id']],
+        ];
+
+        extract(runHook('qr_update_verify_email', get_defined_vars()));
+
+        $SQL->build($update_query);
+
+        $text =
+            $lang['VERIFY_EMAIL_DONE'] .
+            '<br /><a href="' .
+            $config['siteurl'] .
+            ($config['mod_writer'] ? 'login.html' : 'ucp.php?go=login') .
+            '">' .
+            $lang['LOGIN'] .
+            '</a>';
+        kleeja_info($text);
 
         break;
 
@@ -681,10 +758,32 @@ switch (g('go')) {
 
             extract(runHook('submit_profile2', get_defined_vars()));
 
+            //a new email is verified before the next login. The mail goes first, so the email is not changed
+            //to one that can't get the link, the user couldn't log in again
+            $verification_hash = null;
+
+            if (empty($ERRORS) && $new_mail && (int) ($config['verify_email'] ?? 0) === 1) {
+                $verification_hash = bin2hex(random_bytes(32));
+
+                $sent = kleeja_send_verification_mail(
+                    strtolower(trim(p('pmail'))),
+                    (string) $usrcp->name(),
+                    $verification_hash,
+                    sprintf($lang['MAIL_VERIFY_NEW_EMAIL_INTRO'], $config['sitename']),
+                    $lang['MAIL_VERIFY_NEW_EMAIL_IGNORE'],
+                );
+
+                if (!$sent) {
+                    $ERRORS['verify_mail'] = $lang['CANT_SEND_VERIFY_NEW_EMAIL'];
+                }
+            }
+
             //no errors , do it
             if (empty($ERRORS)) {
                 $user_salt = substr(base64_encode(pack('H*', sha1(mt_rand()))), 0, 7);
-                $mail = $new_mail ? 'mail = :mail' : '';
+                $mail = $new_mail
+                    ? 'mail = :mail' . ($verification_hash !== null ? ', verification_hash = :verification_hash' : '')
+                    : '';
                 $showmyfile =
                     p('show_my_filecp', 'int') !== (int) $show_my_filecp
                         ? ($mail === '' ? '' : ', ') . 'show_my_filecp = :show_my_filecp'
@@ -700,6 +799,7 @@ switch (g('go')) {
                     'WHERE' => 'id = :id',
                     'BIND' => [
                         'mail' => kleeja_html_encode(strtolower(trim(p('pmail')))),
+                        'verification_hash' => $verification_hash,
                         'show_my_filecp' => p('show_my_filecp', 'int'),
                         //hash the same password text that the login checks
                         'password' => $pass ? $usrcp->kleeja_hash_password(p('ppass_new') . $user_salt) : '',
@@ -713,7 +813,9 @@ switch (g('go')) {
                 if (trim($update_query['SET']) === '') {
                     $text = $lang['DATA_CHANGED_NO'];
                 } else {
-                    $text = $lang['DATA_CHANGED_O_LO'];
+                    $text =
+                        $lang['DATA_CHANGED_O_LO'] .
+                        ($verification_hash !== null ? '<br />' . $lang['VERIFY_NEW_EMAIL_SENT'] : '');
                     $SQL->build($update_query);
 
                     //Need to update cookies
