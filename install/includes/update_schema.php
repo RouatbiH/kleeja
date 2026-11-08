@@ -274,4 +274,6 @@ $update_schema[11]['sql'] = [
         "\r\n" .
         ' <label>{lang.NO}<input type="radio" id="verify_email" name="verify_email" value="0"  <IF NAME="con.verify_email==0"> checked="checked"</IF> /></label>' .
         "', 11, 'general', 0, 0);",
+    //Asia/Buraydah is not a time zone of PHP, its time is the one of Asia/Riyadh
+    'time_zone_buraydah' => "UPDATE `{$dbprefix}config` SET value = 'Asia/Riyadh' WHERE name = 'time_zone' AND value = 'Asia/Buraydah';",
 ];
