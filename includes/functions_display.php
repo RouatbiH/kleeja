@@ -1141,11 +1141,8 @@ function kleeja_date(int $time, bool $human_time = true, string $format = ''): s
 
     $lengths = ['60', '60', '24', '7', '4.35', '12', '10'];
 
-    $timezone_diff = (int) $config['time_zone'] * 60 * 60;
-    $now = time() + $timezone_diff;
-    $time = $time + $timezone_diff;
-    $difference = $now > $time ? $now - $time : $time - $now;
-    $tense = $now > $time ? $lang['W_AGO'] : $lang['W_FROM'];
+    $now = time();
+    $difference = abs($now - $time);
 
     for ($j = 0; $difference >= $lengths[$j] && $j < sizeof($lengths) - 1; $j++) {
         $difference /= $lengths[$j];
