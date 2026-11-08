@@ -1123,11 +1123,14 @@ function kleeja_date(int $time, bool $human_time = true, string $format = ''): s
         define('TIME_FORMAT', 'd-m-Y h:i a'); // to be moved to configs later
     }
 
-    if (!empty($config['time_zone']) && strpos($config['time_zone'], '/') !== false) {
-        $timezone_offset = timezone_offset_get(new DateTimeZone($config['time_zone']), new DateTime());
-    } else {
-        $timezone_offset = intval($config['time_zone']) * 60 * 60;
+    //an empty or unknown time zone is UTC+0, Africa/Abidjan is in the time zones of the admin panel
+    try {
+        $timezone = new DateTimeZone((string) ($config['time_zone'] ?? ''));
+    } catch (Exception) {
+        $timezone = new DateTimeZone('Africa/Abidjan');
     }
+
+    $timezone_offset = timezone_offset_get($timezone, new DateTime());
 
     if (time() - $time > 86400 * 9 || $format || !$human_time) {
         $format = !$format ? TIME_FORMAT : $format;
